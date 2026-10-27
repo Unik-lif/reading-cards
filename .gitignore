@@ -1,0 +1,13 @@
+# Personal reading data must never be committed.
+/data/
+**/.discussions/
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+.DS_Store
+coverage/
+preview*.png
+preview*.jpg

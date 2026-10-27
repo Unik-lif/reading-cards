@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="本地 Markdown 阅读卡片。留一点自己的理解，不必一次读懂。">
+  <title>泛读 · 阅读卡片</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="泛读首页"><span class="brand-mark">泛</span><span>泛读<small>READING ROOM</small></span></a>
+    <button id="new-note" class="primary"><span aria-hidden="true">＋</span> 新建卡片 <kbd>⌘ ↵</kbd></button>
+    <button id="show-learning" class="learning-nav">待补知识 <span id="gap-count">0</span></button>
+    <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="search" type="search" placeholder="搜索题目或内容" aria-label="搜索题目或内容"></label>
+    <div class="category-filter"><label for="category-filter">按领域索引</label><select id="category-filter"><option value="null">全部领域</option></select></div>
+    <div class="list-label"><span>我的阅读</span><span id="note-count">0</span></div>
+    <nav id="note-list" aria-label="阅读卡片列表"></nav>
+    <div class="sidebar-foot"><span class="local-dot"></span><span>只在本机 · Markdown 保存</span><button id="help" aria-label="使用说明" title="使用说明">?</button></div>
+  </aside>
+  <main>
+    <header class="topbar"><div class="breadcrumb"><span id="current-domain">全部领域</span><span>/</span> 阅读卡片</div><div class="save-status" id="save-status" role="status" aria-live="polite">本地笔记</div></header>
+    <div id="notice" class="notice" role="alert" hidden><span id="notice-text"></span><div><button id="retry">重试保存</button><button id="download-draft">下载草稿</button><button id="reload-note">重新载入</button></div></div>
+    <section id="learning-view" class="learning-view" hidden>
+      <span class="eyebrow">ONE QUESTION AT A TIME</span><h1>待补知识</h1>
+      <p class="muted">把不懂的先放在这里。补完一点，由你自己勾选。</p>
+      <div class="connection-actions"><label><input id="include-done" type="checkbox"> 显示已补</label><button id="refresh-learning">刷新清单</button><button id="back-to-note">返回卡片</button></div>
+      <p id="learning-message" class="inline-message" role="status"></p><div id="learning-list"></div>
+    </section>
+    <section id="empty" class="empty">
+      <div class="eyebrow">A SMALL SPACE FOR YOUR OWN THOUGHTS</div>
+      <div class="empty-paper" aria-hidden="true"><span>01 / 问题</span><i></i><i></i><span>02 / 分析</span><i></i><i class="short"></i><div>读到哪里，写到哪里。</div></div>
+      <h1>留下一点，自己的理解。</h1>
+      <p>不必一次读懂，也不必写成总结。<br>问题、分析、做法、疑问——每次记住一点就好。</p>
+      <button id="first-note" class="primary">＋ 写第一张阅读卡片</button>
+      <small>没有 AI 代填，没有必填项。空着也没关系。</small>
+    </section>
+    <section id="workspace" hidden>
+      <div class="editor-toolbar"><div id="note-date" class="note-date"></div><div class="editor-actions"><div class="mode-switch" role="group" aria-label="编辑模式"><button data-mode="card" aria-pressed="true">卡片</button><button data-mode="markdown" aria-pressed="false">Markdown</button><button data-mode="preview" aria-pressed="false">预览</button></div><button id="download" class="icon-button" title="下载 Markdown 副本" aria-label="下载 Markdown 副本"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg></button></div></div>
+      <article class="paper">
+        <div class="paper-topline"><span>READING NOTE</span><span>泛读 / 随手记</span></div>
+        <label class="sr-only" for="title">论文题目</label><input id="title" class="note-title" maxlength="200" placeholder="这次在读什么？" autocomplete="off">
+        <div class="note-metadata"><label for="note-category">领域</label><select id="note-category"><option value="">未分类</option></select><button id="new-category" type="button">＋ 新建领域</button></div>
+        <p class="paper-hint">用自己的话写几句。暂时不懂的，先留在这里。</p>
+        <div id="card-editor"></div>
+        <label for="markdown-editor" class="sr-only">Markdown 正文</label><textarea id="markdown-editor" spellcheck="false" hidden></textarea>
+        <div id="preview" class="prose" hidden></div>
+        <footer class="paper-footer"><span>保持好奇，允许留白。</span><span id="word-count">0 字</span></footer>
+        <section class="connections" aria-labelledby="connections-title">
+          <div class="connection-heading"><div><span class="eyebrow">READ · QUESTION · RETURN</span><h2 id="connections-title">论文与讨论</h2></div><span class="muted">可选 · 不改正文</span></div>
+          <div class="connection-block"><div class="connection-label">论文</div><div class="connection-content"><strong id="paper-binding-title">还没有绑定论文</strong><p id="paper-binding-meta" class="muted"></p><div class="connection-actions"><button id="bind-paper">绑定论文</button><a id="open-item" class="button-link" hidden>定位 Zotero 条目 ↗</a><a id="open-pdf" class="button-link" hidden>打开 PDF ↗</a><label id="page-field" hidden>PDF 页码 <input id="pdf-page" type="number" min="1" max="100000" placeholder="整篇" aria-label="PDF 页码"></label><button id="unbind-paper" hidden>解除绑定</button></div><small id="pdf-hint" class="muted"></small></div></div>
+          <div class="connection-block"><div class="connection-label">讨论</div><div class="connection-content"><p id="discussion-status">先写自己的理解，再请 Codex 帮忙核对。</p><div class="connection-actions"><button id="bind-discussion">关联旧对话（可选）</button><a id="continue-discussion" class="button-link" hidden>打开旧对话 ↗</a><button id="check-understanding" class="accent-button">检查我的理解（直接发送）</button><button id="start-discussion" hidden>开始新讨论</button></div><small class="muted">点击检查：先保存，再直接发送当前卡片的全部内容和可用论文依据。无需复制模板；不改正文，不清空下方未发送的问题。</small></div></div>
+          <section id="inline-chat" class="inline-chat" aria-labelledby="chat-title">
+            <div class="gap-heading"><h3 id="chat-title">一起想清楚</h3><a id="chat-download" class="button-link" download>下载讨论记录</a></div>
+            <p class="muted">复用本机 Codex 的 ChatGPT 登录及额度。发送时会附上当前笔记、最近讨论和绑定 PDF 的索引文本；不读取旧 Codex 对话，不修改阅读正文。</p>
+            <details id="recap-panel" open hidden><summary>之前我们在讨论什么 · 最新回顾</summary><p id="recap-date" class="muted"></p><div id="recap-body" class="prose"></div></details>
+            <div class="connection-actions"><button id="finish-discussion" type="button">结束本次讨论并更新回顾</button></div>
+            <p class="muted">主动点击后调用 Codex 整理；不等关机时自动执行。保留旧版回顾和完整聊天，不改正文。输入框里未发送的内容不参与整理。</p>
+            <p id="recap-status" class="inline-message" role="status"></p>
+            <div id="chat-log" class="chat-log" aria-label="本篇讨论记录"></div>
+            <form id="chat-form"><label for="chat-input">你的问题</label><textarea id="chat-input" rows="3" maxlength="12000" placeholder="例如：我理解的这个因果关系对吗？先给我一个提示。"></textarea><div class="connection-actions"><button id="chat-send" class="primary" type="submit">发送给 Codex</button><button id="chat-stop" type="button" hidden>停止回答</button><span class="muted">仅讨论 · 不执行命令或外部插件</span></div></form>
+            <p id="chat-feedback" class="inline-message" role="status"></p>
+          </section>
+          <p id="connection-message" class="inline-message" role="status"></p>
+          <div class="gap-heading"><h3>这篇的待补问题</h3><span class="muted">只收集你认可的知识缺口</span></div>
+          <div id="card-gaps"></div>
+          <form id="gap-form" class="gap-form"><label class="sr-only" for="gap-input">待补问题</label><textarea id="gap-input" maxlength="2000" rows="2" placeholder="例如：rollout 和 GPU 在训练中是什么关系？"></textarea><button type="submit">＋ 加入清单</button></form>
+        </section>
+      </article>
+      <div class="file-location"><span id="filename"></span><button id="rename-note" type="button">重命名</button><span>自动保存 · ⌘S / Ctrl+S</span></div>
+    </section>
+  </main>
+  <dialog id="rename-dialog" aria-labelledby="rename-dialog-title"><form id="rename-form"><span class="eyebrow">A NAME YOU CAN FIND</span><h2 id="rename-dialog-title">重命名文件</h2><label for="new-filename">文件名</label><input id="new-filename" autocomplete="off" required><button id="generate-filename" type="button">根据题目生成</button><p>可以手动修改；省略 .md 时会自动补上。只改文件名，不改题目、正文或关联。旧讨论中已发送的文件路径不会自动更新。</p><p id="rename-message" class="inline-message" role="status"></p><div class="dialog-actions"><button id="cancel-rename" type="button">取消</button><button id="confirm-rename" class="primary" type="submit">确认重命名</button></div></form></dialog>
+  <dialog id="paper-dialog" class="wide-dialog" aria-labelledby="paper-dialog-title">
+    <button data-close="paper-dialog" class="close-dialog" aria-label="关闭论文绑定">×</button><span class="eyebrow">YOUR LOCAL LIBRARY</span><h2 id="paper-dialog-title">绑定一篇主论文</h2>
+    <p class="muted">只搜索本机 Zotero 个人文库。选择后仍需你确认，不修改文献库。</p>
+    <form id="paper-search-form" class="search-form"><label class="sr-only" for="paper-query">搜索 Zotero</label><input id="paper-query" maxlength="200" placeholder="题目、作者或年份" required><button type="submit">搜索 / 重试</button></form>
+    <p id="paper-message" class="inline-message" role="status"></p><div id="paper-results" class="paper-results"></div>
+    <section id="paper-selection" class="paper-selection" hidden><strong id="selected-paper-title"></strong><p id="selected-paper-meta" class="muted"></p><label for="pdf-choice">PDF 附件</label><select id="pdf-choice"></select><p id="attachment-message" class="muted"></p><button id="retry-attachments" hidden>重试读取附件</button><button id="confirm-paper" class="primary">确认绑定这篇</button></section>
+    <details class="manual-binding"><summary>Zotero 未启动？手动粘贴链接</summary><p class="muted">条目与 PDF 是不同的链接。可只填一个；仅填 PDF 时不会假装已知它的论文条目。此处粘贴的配对由你确认。</p><form id="manual-paper-form"><label for="manual-item">条目链接（可选）</label><input id="manual-item" placeholder="zotero://select/library/items/…"><label for="manual-pdf">PDF 链接（可选）</label><input id="manual-pdf" placeholder="zotero://open-pdf/library/items/…?page=2"><p id="manual-message" class="inline-message" role="status"></p><button type="submit">保存这些链接</button></form></details>
+  </dialog>
+  <dialog id="discussion-dialog" aria-labelledby="discussion-dialog-title"><button data-close="discussion-dialog" class="close-dialog" aria-label="关闭对话绑定">×</button><span class="eyebrow">CONTINUE THE CONVERSATION</span><h2 id="discussion-dialog-title">绑定本地对话</h2><p>在 Codex 对话中复制「对话深链接」（Mac：⌘⌥L），粘贴一次即可。不要使用公开分享链接。</p><form id="discussion-form"><label for="discussion-url">对话链接</label><input id="discussion-url" placeholder="codex://threads/…" maxlength="160"><p id="discussion-message" class="inline-message" role="status"></p><div class="dialog-actions"><button id="unbind-discussion" type="button">解除绑定</button><button type="submit" class="primary">保存对话入口</button></div></form><small class="muted">网页仅校验链接格式，不读取聊天记录，也无法判断对话是否已删除。</small></dialog>
+  <dialog id="request-dialog" class="wide-dialog" aria-labelledby="request-dialog-title"><button data-close="request-dialog" class="close-dialog" aria-label="关闭检查请求">×</button><span class="eyebrow">YOU THINK FIRST</span><h2 id="request-dialog-title">准备好再发出。</h2><p id="request-instructions"></p><label for="review-request">可编辑的讨论请求</label><textarea id="review-request" rows="15" spellcheck="false"></textarea><p id="request-message" class="inline-message" role="status"></p><div class="connection-actions"><button id="copy-request" class="primary">1. 复制请求</button><a id="request-open" class="button-link">2. 打开对话 ↗</a><button id="copy-discussion-link">复制跳转链接</button></div><p class="muted">尚未发送，也未开始审阅。新对话发送后，复制其本地链接回来绑定；聊天回复不会自动同步到网页。</p><p class="muted">若没有跳转：确认 Codex 已启动，并允许浏览器打开对应应用。旧链接失效时，请返回卡片重新绑定。</p></dialog>
+  <dialog id="category-dialog" aria-labelledby="category-dialog-title"><form id="category-form"><span class="eyebrow">A PLACE ON YOUR READING MAP</span><h2 id="category-dialog-title">给它一个领域。</h2><label for="category-name">领域名称</label><input id="category-name" maxlength="40" placeholder="例如：Agent Sandbox、Serverless" autocomplete="off" required><p>保存后归入当前卡片。已有同名领域会直接复用，不会改动正文。</p><div class="dialog-actions"><button id="cancel-category" type="button">取消</button><button class="primary" type="submit">保存领域</button></div></form></dialog>
+  <dialog id="help-dialog"><button id="close-help" class="close-dialog" aria-label="关闭说明">×</button><span class="eyebrow">YOUR NOTES, YOUR WORDS</span><h2>只给思考留个位置。</h2><p>新建卡片后，写题目，直接在四个提示下面输入。支持 Markdown，可以留空，也可以在 Markdown 模式增删标题。</p><p>输入停顿后自动保存。离开前，请确认右上角显示「已保存」。遇到保存错误，可以下载草稿，不必丢掉自己的输入。</p><h3>文件属于你</h3><p>所有内容都存为本地 .md 文件，没有账号、云同步或 AI 自动填写。</p><code id="storage-path"></code><h3>改一张空白模板</h3><p>下面的文件决定以后新卡片的结构，不会改变现有笔记：</p><code id="template-path"></code><p class="muted">浏览器需连接本机启动窗口。关闭启动窗口后，下次双击「打开阅读卡片.command」即可继续。</p></dialog>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "reading-cards",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "version": "0.1.0",
+  "description": "Local-first reading cards: think for yourself, discuss when needed.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Unik-lif/reading-cards.git"
+  }
+}
